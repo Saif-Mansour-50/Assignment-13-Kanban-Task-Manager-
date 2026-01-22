@@ -1,0 +1,106 @@
+:root {
+  --main-color: #6930fa;
+}
+
+body {
+  background-color: #f8fafc;
+}
+
+h1,
+h2,
+h3,
+p {
+  margin: 0;
+}
+.form-control:focus {
+  border-color: #615fff;
+  box-shadow: 0 0 0 0.15rem rgb(97, 95, 255);
+}
+
+.main-shadow {
+  box-shadow:
+    0 1px 3px 0 rgba(0, 0, 0, 0.1),
+    0 1px 2px -1px rgba(0, 0, 0, 0.1);
+}
+
+.hover-nav-icon:hover {
+  background-color: #f3f4f6;
+}
+.bg-gradien {
+  background-image: linear-gradient(to right, #7d23fd, #5039f7);
+}
+.bg-add {
+  width: 45px;
+  height: 45px;
+  background-color: transparent;
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.152);
+}
+.bg-add:hover {
+  background-color: rgba(255, 255, 255, 0.152);
+}
+.bg-toDo {
+  width: 40px;
+  height: 40px;
+  background-color: #f1f5f9;
+}
+.bg-toDo {
+  width: 40px;
+  height: 40px;
+  background-color: #f1f5f9;
+}
+.bg-Progress {
+  width: 40px;
+  height: 40px;
+  background-color: #fffbeb;
+}
+.bg-Complete {
+  width: 40px;
+  height: 40px;
+  background-color: #ecfdf5;
+}
+.bg-hov:hover .fa-pen,
+.bg-hov:hover .fa-trash {
+  color: #777;
+  cursor: pointer;
+}
+
+.bg-edit:hover .fa-pen {
+  color: blue;
+}
+.bg-trash:hover .fa-trash {
+  color: red;
+}
+.bg-blue-50 {
+  background-color: #eff6ff;
+}
+.fa-pen,
+.fa-trash {
+  color: white;
+  transition: all 0.3s;
+}
+.bg-st {
+  background-color: #fef3c6;
+  color: #bb4d00;
+}
+.bg-co {
+  background-color: #d0fae5;
+  color: #007a55;
+}
+.shadow-hover {
+  transition: all 0.3s ease;
+  box-shadow:
+    inset 0 2px 4px 0 rgba(0, 0, 0, 0.05),
+    0 0 0 3px #ffffff,
+    0 0 0 3px rgba(122, 134, 154, 0.5),
+    0 1px 3px 0 rgba(0, 0, 0, 0.1),
+    0 1px 2px -1px rgba(0, 0, 0, 0.1);
+}
+.shadow-hover:hover {
+  box-shadow:
+    inset 0 2px 4px 0 rgba(0, 0, 0, 0.05),
+    0 0 0 2px #ffffff,
+    0 0 0 3px rgba(122, 134, 154, 0.5),
+    0 1px 3px 0 rgba(0, 0, 0, 0.1),
+    0 1px 2px -1px rgba(0, 0, 0, 0.1);
+}
