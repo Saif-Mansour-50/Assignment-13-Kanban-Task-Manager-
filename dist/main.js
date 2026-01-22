@@ -31,7 +31,6 @@ function addProduct(e) {
     productName.value = "";
     textareaInput.value = "";
     dateInput.value = "";
-    dateInput.value = "";
 }
 function getTimeAgo(time) {
     const seconds = Math.floor((Date.now() - time) / 1000);
@@ -127,7 +126,6 @@ function gitDataToUpdate(index) {
         productName.value = product.name;
         selectInput.value = product.selectInput;
         textareaInput.value = product.textareaInput;
-        dateInput.value = product.date;
     }
     addBtn?.classList.add("d-none");
     updateBtn?.classList.remove("d-none");
@@ -145,7 +143,6 @@ function updateProduct() {
     updateBtn?.classList.add("d-none");
     productName.value = "";
     textareaInput.value = "";
-    dateInput.value = "";
     dateInput.value = "";
 }
 //# sourceMappingURL=main.js.map
