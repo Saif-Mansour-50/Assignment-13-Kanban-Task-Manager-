@@ -44,6 +44,13 @@ p {
   height: 40px;
   background-color: #f1f5f9;
 }
+.bg-todoo {
+  cursor: pointer;
+  transition: 0.3s all ease;
+}
+.bg-todoo:hover {
+  transform: scale(1.1);
+}
 .bg-toDo {
   width: 40px;
   height: 40px;
@@ -82,10 +89,20 @@ p {
 .bg-st {
   background-color: #fef3c6;
   color: #bb4d00;
+  transition: 0.3s all ease;
+  cursor: pointer;
+}
+.bg-st:hover {
+  transform: scale(1.1);
 }
 .bg-co {
   background-color: #d0fae5;
   color: #007a55;
+  transition: 0.3s all ease;
+  cursor: pointer;
+}
+.bg-co:hover {
+  transform: scale(1.1);
 }
 .shadow-hover {
   transition: all 0.3s ease;

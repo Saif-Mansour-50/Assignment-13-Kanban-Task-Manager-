@@ -23,13 +23,14 @@ if (localStorage.getItem("productList") != null) {
 }
 //
 
-console.log(productName, selectInput, dateInput, textareaInput);
+// console.log(productName, selectInput, dateInput, textareaInput);
 interface Products {
   name: string;
   selectInput: string;
   date: string;
   textareaInput: string;
   timestamp: number;
+  status?: string;
 }
 
 function addProduct(e: Event) {
@@ -54,12 +55,12 @@ function addProduct(e: Event) {
   dateInput.value = "";
 }
 function getTimeAgo(time: number): string {
-  const seconds = Math.floor((Date.now() - time) / 1000);
+  let seconds = Math.floor((Date.now() - time) / 1000);
 
   if (seconds < 60) return "Just now";
-  const minutes = Math.floor(seconds / 60);
+  let minutes = Math.floor(seconds / 60);
   if (minutes < 60) return `${minutes} min ago`;
-  const hours = Math.floor(minutes / 60);
+  let hours = Math.floor(minutes / 60);
   if (hours < 24) return `${hours} hours ago`;
 
   return "More than a day ago";
@@ -77,7 +78,7 @@ function displayProduct(list: Products[]): void {
 
     cartona += `
     
-     <div class="mb-3 bg-hov shadow-hover p-2 mt-3 rounded-3">
+     <div id="product-card-${i}" class="mb-3 bg-hov shadow-hover p-2 mt-3 rounded-3">
               <div class="d-flex justify-content-between align-items-center ">
                 <div>
                   <span><i  style="font-size: 10px;" class="fa-solid fa-circle me-1 text-black-50"></i></span>
@@ -114,14 +115,20 @@ function displayProduct(list: Products[]): void {
                 <span> <i class="fa-regular fa-clock"></i> ${getTimeAgo(list[i]?.timestamp ?? Date.now())}</span>
               </div>
               <div class="d-flex align-items-center py-2">
-                <span
+                <span onclick="moveToSection2(${i})"
                 class="p-1 me-2 bg-st fw-semibold m-0 rounded-3"
                 
               >
                 <i class="fa-solid fa-plus fa-2lg "></i> Start
               </span>
-                  <span
-                class="p-1 bg-co fw-semibold m-0 rounded-3"
+                <span onclick="backToSection1(${i})" 
+                class="p-1 me-2 bg-todoo text-black-50  fw-semibold m-0 rounded-3 d-none "
+                
+              >
+                <i class="fa-solid fa-arrow-rotate-left"></i> To Do
+              </span>
+                  <span  onclick="moveToSection3(${i})"
+                class="p-1 bg-co fw-semibold  m-0 rounded-3"
                 
               >
                 <i class="fa-solid fa-plus fa-2lg "></i> Complete
@@ -156,6 +163,7 @@ function gitDataToUpdate(index: number): void {
     productName.value = product.name;
     selectInput.value = product.selectInput;
     textareaInput.value = product.textareaInput;
+    dateInput.value = product.date;
   }
   addBtn?.classList.add("d-none");
   updateBtn?.classList.remove("d-none");
@@ -168,6 +176,7 @@ function updateProduct(): void {
     product.name = productName.value;
     product.selectInput = selectInput.value;
     product.textareaInput = textareaInput.value;
+    product.date = dateInput.value;
   }
   displayProduct(productList);
   localStorage.setItem("productList", JSON.stringify(productList));
@@ -177,3 +186,96 @@ function updateProduct(): void {
   textareaInput.value = "";
   dateInput.value = "";
 }
+
+// start btn
+
+function moveToSection2(index: number): void {
+  let productCard = document.getElementById(`product-card-${index}`);
+  let section2Container = document.getElementById("newcontact2");
+
+  if (productCard && section2Container) {
+    section2Container.appendChild(productCard);
+
+    let startBtn = productCard.querySelector(".bg-st") as HTMLElement;
+    let todoBtn = productCard.querySelector(".bg-todoo") as HTMLElement;
+    let completeBtn = productCard.querySelector(".bg-co") as HTMLElement;
+
+    if (startBtn) {
+      startBtn.style.display = "none";
+    }
+
+    if (todoBtn) {
+      todoBtn.classList.remove("d-none");
+      todoBtn.classList.add("d-block");
+    }
+
+    if (completeBtn) {
+      completeBtn.style.display = "block";
+      completeBtn.classList.remove("d-none");
+    }
+  }
+}
+
+// todo Btn
+
+function backToSection1(index: number): void {
+  let productCard = document.getElementById(`product-card-${index}`);
+  let section1 = document.getElementById("newcontact");
+
+  if (productCard && section1) {
+    section1.appendChild(productCard);
+
+    let startBtn = productCard.querySelector(".bg-st") as HTMLElement;
+    let completeBtn = productCard.querySelector(".bg-co") as HTMLElement;
+    let todoBtn = productCard.querySelector(".bg-todoo") as HTMLElement;
+
+    if (startBtn) {
+      startBtn.style.display = "block";
+      startBtn.classList.remove("d-none");
+    }
+
+    if (completeBtn) {
+      completeBtn.style.display = "block";
+      completeBtn.classList.remove("d-none");
+    }
+
+    if (todoBtn) {
+      todoBtn.classList.add("d-none");
+      todoBtn.classList.remove("d-block");
+    }
+  }
+}
+
+// complete Btn
+
+function moveToSection3(index: number): void {
+  let productCard = document.getElementById(`product-card-${index}`);
+  let section3 = document.getElementById("newcontact3");
+
+  if (productCard && section3) {
+    section3.appendChild(productCard);
+
+    let startBtn = productCard.querySelector(".bg-st") as HTMLElement;
+    let todoBtn = productCard.querySelector(".bg-todoo") as HTMLElement;
+    let completeBtn = productCard.querySelector(".bg-co") as HTMLElement;
+
+    if (startBtn) {
+      startBtn.style.display = "block";
+
+      startBtn.classList.remove("d-none");
+    }
+
+    if (todoBtn) {
+      todoBtn.classList.remove("d-none");
+      todoBtn.classList.add("d-block");
+    }
+
+    if (completeBtn) {
+      completeBtn.style.display = "none";
+    }
+  }
+}
+
+(window as any).moveToSection3 = moveToSection3;
+(window as any).moveToSection2 = moveToSection2;
+(window as any).backToSection1 = backToSection1;

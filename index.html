@@ -15,7 +15,7 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"
 <title>Kanban Task Manager</title>
 </head>
 <body>
-<nav class="navbar navbar-expand-lg bg-gradien">
+<nav class="navbar navbar-expand-lg bg-gradien position-fixed top-0 end-0 start-0 ">
 <div class="container">
 <div class="d-flex justify-content-center align-items-center">
   
@@ -28,7 +28,26 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"
   </div>
 </div>
   <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
-    <div
+   
+    <li class="nav-item btn-hover">
+      <button
+        class="nav-link btn bg-add text-white fw-semibold fire p-2 "
+        aria-current="page"
+        data-bs-toggle="modal"
+        data-bs-target="#staticBackdrop"
+        href="#"
+        id=" Add-Contact"
+        type="button"
+      >
+        <i class="fa-solid fa-plus fa-2lg "></i>
+      </button>
+    </li>
+  </ul>
+</div>
+</div>
+</nav>
+<div class="modaal">
+   <div
       class="modal fade"
       id="staticBackdrop"
       data-bs-backdrop="static"
@@ -156,32 +175,16 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"
         </div>
       </div>
     </div>
-    <li class="nav-item btn-hover">
-      <button
-        class="nav-link btn bg-add text-white fw-semibold fire p-2 "
-        aria-current="page"
-        data-bs-toggle="modal"
-        data-bs-target="#staticBackdrop"
-        href="#"
-        id=" Add-Contact"
-        type="button"
-      >
-        <i class="fa-solid fa-plus fa-2lg "></i>
-      </button>
-    </li>
-  </ul>
 </div>
-</div>
-</nav>
 
 <main>
-<section class="py-4">
-  <div class="container">
+<section class="py-5">
+  <div class="container pt-5">
 
     <div class="row g-4">
-            <div class="col-md-4  ">
+            <div class="col-md-4 section1 ">
         <div
-          class="  p-3 main-shadow bg-white rounded-3"
+          class="  p-3 main-shadow bg-white rounded-3 min-vh-100"
         >
         <div class="d-flex  rounded-4  gap-3 align-items-center  p-2 ">
 
@@ -254,8 +257,8 @@ data-bs-target="#staticBackdrop"
         </div>
         
       </div>
-            <div class="col-md-4 ">
-              <div class="  p-3 main-shadow bg-white rounded-3">
+            <div class="col-md-4 section2">
+              <div class="  p-3 main-shadow bg-white rounded-3 min-vh-100">
 
                 <div
                   class="d-flex box-s rounded-4  gap-3 align-items-center p-2 "
@@ -270,7 +273,9 @@ data-bs-target="#staticBackdrop"
                     <p id="totalDo" class="text-black-50 ">1 tasks</p>
                   </div>
                 </div>
-                <!-- <div id="newContact "  >
+                <div id="newcontact2" class="newcontact2"></div>
+
+                <!-- <div id="newcontact2 "  >
             <div class="mb-3 bg-hov shadow-hover p-2 mt-3 rounded-3">
               <div class="d-flex justify-content-between align-items-center ">
                 <div>
@@ -328,7 +333,7 @@ data-bs-target="#staticBackdrop"
               </div>
       </div>
             <div class="col-md-4">
-              <div class="  p-3 main-shadow bg-white rounded-3">
+              <div class="  p-3 main-shadow bg-white rounded-3 min-vh-100">
 
                 <div
                   class="d-flex box-s rounded-4  gap-3 align-items-center  p-2 "
@@ -343,6 +348,8 @@ data-bs-target="#staticBackdrop"
                     <p id="totalDo" class="text-black-50 ">3 tasks</p>
                   </div>
                 </div>
+                <div id="newcontact3" class="newcontact3"></div>
+
                 <!-- <div id="newContact "  >
             <div class="mb-3 bg-hov shadow-hover p-2 mt-3 rounded-3">
               <div class="d-flex justify-content-between align-items-center ">
