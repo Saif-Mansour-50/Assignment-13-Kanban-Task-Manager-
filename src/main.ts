@@ -33,7 +33,7 @@ interface Products {
   date: string;
   textareaInput: string;
   timestamp: number;
-  status?: string;
+  status: "todo" | "doing" | "done";
 }
 
 function addProduct(e: Event) {
@@ -45,18 +45,35 @@ function addProduct(e: Event) {
     date: dateInput.value,
     textareaInput: textareaInput.value,
     timestamp: Date.now(),
+    status: "todo",
   };
 
   productList.push(productData);
-
+  updateCounter("newcontact", "totalDo");
+  updateCounter("newcontact2", "totalDo2");
+  updateCounter("newcontact3", "totalDo3");
   localStorage.setItem("productList", JSON.stringify(productList));
 
   displayProduct(productList);
   productName.value = "";
   textareaInput.value = "";
-
   dateInput.value = "";
 }
+// tasks count todo
+function updateCounter(containerId: string, displayId: string): void {
+  let container = document.getElementById(containerId);
+  let totalDisplay = document.getElementById(displayId);
+
+  if (container && totalDisplay) {
+    let count = container.querySelectorAll(":scope > div").length;
+    totalDisplay.textContent = `${count} tasks`;
+  }
+}
+
+// tasks count In Progress
+
+// tasks count Completed
+
 function getTimeAgo(time: number): string {
   let seconds = Math.floor((Date.now() - time) / 1000);
 
@@ -66,7 +83,7 @@ function getTimeAgo(time: number): string {
   let hours = Math.floor(minutes / 60);
   if (hours < 24) return `${hours} hours ago`;
 
-  return "More than a day ago";
+  return "a day ago";
 }
 
 setInterval(() => {
@@ -154,6 +171,10 @@ function deleteProduct(index: number): void {
   localStorage.setItem("productList", JSON.stringify(productList));
 
   displayProduct(productList);
+
+  updateCounter("newcontact", "totalDo");
+  updateCounter("newcontact2", "totalDo2");
+  updateCounter("newcontact3", "totalDo3");
 }
 
 //edit
@@ -199,6 +220,10 @@ function moveToSection2(index: number): void {
   if (productCard && section2Container) {
     section2Container.appendChild(productCard);
 
+    updateCounter("newcontact", "totalDo");
+    updateCounter("newcontact2", "totalDo2");
+    updateCounter("newcontact3", "totalDo3");
+
     let startBtn = productCard.querySelector(".bg-st") as HTMLElement;
     let todoBtn = productCard.querySelector(".bg-todoo") as HTMLElement;
     let completeBtn = productCard.querySelector(".bg-co") as HTMLElement;
@@ -217,6 +242,9 @@ function moveToSection2(index: number): void {
       completeBtn.classList.remove("d-none");
     }
   }
+  localStorage.setItem("productList", JSON.stringify(productList));
+
+  displayProduct(productList);
 }
 
 // todo Btn
@@ -227,6 +255,10 @@ function backToSection1(index: number): void {
 
   if (productCard && section1) {
     section1.appendChild(productCard);
+
+    updateCounter("newcontact", "totalDo");
+    updateCounter("newcontact2", "totalDo2");
+    updateCounter("newcontact3", "totalDo3");
 
     let startBtn = productCard.querySelector(".bg-st") as HTMLElement;
     let completeBtn = productCard.querySelector(".bg-co") as HTMLElement;
@@ -247,6 +279,9 @@ function backToSection1(index: number): void {
       todoBtn.classList.remove("d-block");
     }
   }
+  localStorage.setItem("productList", JSON.stringify(productList));
+
+  displayProduct(productList);
 }
 
 // complete Btn
@@ -257,6 +292,9 @@ function moveToSection3(index: number): void {
 
   if (productCard && section3) {
     section3.appendChild(productCard);
+    updateCounter("newcontact", "totalDo");
+    updateCounter("newcontact2", "totalDo2");
+    updateCounter("newcontact3", "totalDo3");
 
     let startBtn = productCard.querySelector(".bg-st") as HTMLElement;
     let todoBtn = productCard.querySelector(".bg-todoo") as HTMLElement;
@@ -277,8 +315,32 @@ function moveToSection3(index: number): void {
       completeBtn.style.display = "none";
     }
   }
+  localStorage.setItem("productList", JSON.stringify(productList));
+
+  displayProduct(productList);
 }
 
 (window as any).moveToSection3 = moveToSection3;
 (window as any).moveToSection2 = moveToSection2;
 (window as any).backToSection1 = backToSection1;
+
+// count down
+if (maxlength) {
+  count.textContent = maxlength.toString();
+}
+textareaInput.oninput = function () {
+  let currentLength = textareaInput.value.length;
+  let max = Number(maxlength);
+
+  count.textContent = (max - currentLength).toString();
+  progress.style.width = `${(currentLength * 100) / max}%`;
+};
+
+//count task
+// let totalDisplay = document.getElementById("totalDo") as HTMLInputElement;
+
+// let container = document.getElementById("newcontact") as HTMLInputElement;
+
+// let numberOfTasks = container.querySelectorAll(":scope > div").length;
+
+// totalDisplay.textContent = `${numberOfTasks} tasks`;

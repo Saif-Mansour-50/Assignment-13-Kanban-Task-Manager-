@@ -1,11 +1,15 @@
 let productName = document.getElementById("productInput");
 let selectInput = document.getElementById("selectInput");
 let dateInput = document.getElementById("dateInput");
+let count = document.querySelector(".count");
+let progress = document.querySelector(".progress");
 let textareaInput = document.getElementById("textareaInput");
+let maxlength = Number(textareaInput.getAttribute("maxlength"));
 //btn
 let addBtn = document.getElementById("addBtn");
 let deleteButton = document.getElementById("deleteButton");
 let updateBtn = document.getElementById("updateBtn");
+//////
 //
 let productList = [];
 let currentIndex;
@@ -13,6 +17,9 @@ let currentIndex;
 if (localStorage.getItem("productList") != null) {
     productList = JSON.parse(localStorage.getItem("productList"));
     displayProduct(productList);
+    updateCounter("newcontact", "totalDo");
+    updateCounter("newcontact2", "totalDo2");
+    updateCounter("newcontact3", "totalDo3");
 }
 function addProduct(e) {
     e.preventDefault();
@@ -22,14 +29,29 @@ function addProduct(e) {
         date: dateInput.value,
         textareaInput: textareaInput.value,
         timestamp: Date.now(),
+        status: "todo",
     };
     productList.push(productData);
+    updateCounter("newcontact", "totalDo");
+    updateCounter("newcontact2", "totalDo2");
+    updateCounter("newcontact3", "totalDo3");
     localStorage.setItem("productList", JSON.stringify(productList));
     displayProduct(productList);
     productName.value = "";
     textareaInput.value = "";
     dateInput.value = "";
 }
+// tasks count todo
+function updateCounter(containerId, displayId) {
+    const container = document.getElementById(containerId);
+    const totalDisplay = document.getElementById(displayId);
+    if (container && totalDisplay) {
+        const count = container.querySelectorAll(":scope > div").length;
+        totalDisplay.textContent = `${count} tasks`;
+    }
+}
+// tasks count In Progress
+// tasks count Completed
 function getTimeAgo(time) {
     let seconds = Math.floor((Date.now() - time) / 1000);
     if (seconds < 60)
@@ -40,7 +62,7 @@ function getTimeAgo(time) {
     let hours = Math.floor(minutes / 60);
     if (hours < 24)
         return `${hours} hours ago`;
-    return "More than a day ago";
+    return "a day ago";
 }
 setInterval(() => {
     displayProduct(productList);
@@ -121,6 +143,9 @@ function deleteProduct(index) {
     productList.splice(index, 1);
     localStorage.setItem("productList", JSON.stringify(productList));
     displayProduct(productList);
+    updateCounter("newcontact", "totalDo");
+    updateCounter("newcontact2", "totalDo2");
+    updateCounter("newcontact3", "totalDo3");
 }
 //edit
 function gitDataToUpdate(index) {
@@ -157,6 +182,9 @@ function moveToSection2(index) {
     let section2Container = document.getElementById("newcontact2");
     if (productCard && section2Container) {
         section2Container.appendChild(productCard);
+        updateCounter("newcontact", "totalDo");
+        updateCounter("newcontact2", "totalDo2");
+        updateCounter("newcontact3", "totalDo3");
         let startBtn = productCard.querySelector(".bg-st");
         let todoBtn = productCard.querySelector(".bg-todoo");
         let completeBtn = productCard.querySelector(".bg-co");
@@ -172,6 +200,8 @@ function moveToSection2(index) {
             completeBtn.classList.remove("d-none");
         }
     }
+    localStorage.setItem("productList", JSON.stringify(productList));
+    displayProduct(productList);
 }
 // todo Btn
 function backToSection1(index) {
@@ -179,6 +209,9 @@ function backToSection1(index) {
     let section1 = document.getElementById("newcontact");
     if (productCard && section1) {
         section1.appendChild(productCard);
+        updateCounter("newcontact", "totalDo");
+        updateCounter("newcontact2", "totalDo2");
+        updateCounter("newcontact3", "totalDo3");
         let startBtn = productCard.querySelector(".bg-st");
         let completeBtn = productCard.querySelector(".bg-co");
         let todoBtn = productCard.querySelector(".bg-todoo");
@@ -195,6 +228,8 @@ function backToSection1(index) {
             todoBtn.classList.remove("d-block");
         }
     }
+    localStorage.setItem("productList", JSON.stringify(productList));
+    displayProduct(productList);
 }
 // complete Btn
 function moveToSection3(index) {
@@ -202,6 +237,9 @@ function moveToSection3(index) {
     let section3 = document.getElementById("newcontact3");
     if (productCard && section3) {
         section3.appendChild(productCard);
+        updateCounter("newcontact", "totalDo");
+        updateCounter("newcontact2", "totalDo2");
+        updateCounter("newcontact3", "totalDo3");
         let startBtn = productCard.querySelector(".bg-st");
         let todoBtn = productCard.querySelector(".bg-todoo");
         let completeBtn = productCard.querySelector(".bg-co");
@@ -217,8 +255,25 @@ function moveToSection3(index) {
             completeBtn.style.display = "none";
         }
     }
+    localStorage.setItem("productList", JSON.stringify(productList));
+    displayProduct(productList);
 }
 window.moveToSection3 = moveToSection3;
 window.moveToSection2 = moveToSection2;
 window.backToSection1 = backToSection1;
+// count down
+if (maxlength) {
+    count.textContent = maxlength.toString();
+}
+textareaInput.oninput = function () {
+    let currentLength = textareaInput.value.length;
+    let max = Number(maxlength);
+    count.textContent = (max - currentLength).toString();
+    progress.style.width = `${(currentLength * 100) / max}%`;
+};
+//count task
+// let totalDisplay = document.getElementById("totalDo") as HTMLInputElement;
+// let container = document.getElementById("newcontact") as HTMLInputElement;
+// const numberOfTasks = container.querySelectorAll(":scope > div").length;
+// totalDisplay.textContent = `${numberOfTasks} tasks`;
 //# sourceMappingURL=main.js.map
