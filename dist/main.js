@@ -17,9 +17,6 @@ let currentIndex;
 if (localStorage.getItem("productList") != null) {
     productList = JSON.parse(localStorage.getItem("productList"));
     displayProduct(productList);
-    updateCounter("newcontact", "totalDo");
-    updateCounter("newcontact2", "totalDo2");
-    updateCounter("newcontact3", "totalDo3");
 }
 function addProduct(e) {
     e.preventDefault();
@@ -43,10 +40,10 @@ function addProduct(e) {
 }
 // tasks count todo
 function updateCounter(containerId, displayId) {
-    const container = document.getElementById(containerId);
-    const totalDisplay = document.getElementById(displayId);
+    let container = document.getElementById(containerId);
+    let totalDisplay = document.getElementById(displayId);
     if (container && totalDisplay) {
-        const count = container.querySelectorAll(":scope > div").length;
+        let count = container.querySelectorAll(":scope > div").length;
         totalDisplay.textContent = `${count} tasks`;
     }
 }
@@ -181,6 +178,8 @@ function moveToSection2(index) {
     let productCard = document.getElementById(`product-card-${index}`);
     let section2Container = document.getElementById("newcontact2");
     if (productCard && section2Container) {
+        productList[index].status = "doing";
+        localStorage.setItem("productList", JSON.stringify(productList));
         section2Container.appendChild(productCard);
         updateCounter("newcontact", "totalDo");
         updateCounter("newcontact2", "totalDo2");
@@ -200,14 +199,14 @@ function moveToSection2(index) {
             completeBtn.classList.remove("d-none");
         }
     }
-    localStorage.setItem("productList", JSON.stringify(productList));
-    displayProduct(productList);
 }
 // todo Btn
 function backToSection1(index) {
     let productCard = document.getElementById(`product-card-${index}`);
     let section1 = document.getElementById("newcontact");
     if (productCard && section1) {
+        productList[index].status = "todo";
+        localStorage.setItem("productList", JSON.stringify(productList));
         section1.appendChild(productCard);
         updateCounter("newcontact", "totalDo");
         updateCounter("newcontact2", "totalDo2");
@@ -228,14 +227,14 @@ function backToSection1(index) {
             todoBtn.classList.remove("d-block");
         }
     }
-    localStorage.setItem("productList", JSON.stringify(productList));
-    displayProduct(productList);
 }
 // complete Btn
 function moveToSection3(index) {
     let productCard = document.getElementById(`product-card-${index}`);
     let section3 = document.getElementById("newcontact3");
     if (productCard && section3) {
+        productList[index].status = "done";
+        localStorage.setItem("productList", JSON.stringify(productList));
         section3.appendChild(productCard);
         updateCounter("newcontact", "totalDo");
         updateCounter("newcontact2", "totalDo2");
@@ -255,8 +254,6 @@ function moveToSection3(index) {
             completeBtn.style.display = "none";
         }
     }
-    localStorage.setItem("productList", JSON.stringify(productList));
-    displayProduct(productList);
 }
 window.moveToSection3 = moveToSection3;
 window.moveToSection2 = moveToSection2;
@@ -274,6 +271,6 @@ textareaInput.oninput = function () {
 //count task
 // let totalDisplay = document.getElementById("totalDo") as HTMLInputElement;
 // let container = document.getElementById("newcontact") as HTMLInputElement;
-// const numberOfTasks = container.querySelectorAll(":scope > div").length;
+// let numberOfTasks = container.querySelectorAll(":scope > div").length;
 // totalDisplay.textContent = `${numberOfTasks} tasks`;
 //# sourceMappingURL=main.js.map

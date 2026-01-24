@@ -218,6 +218,9 @@ function moveToSection2(index: number): void {
   let section2Container = document.getElementById("newcontact2");
 
   if (productCard && section2Container) {
+    productList[index]!.status = "doing";
+    localStorage.setItem("productList", JSON.stringify(productList));
+
     section2Container.appendChild(productCard);
 
     updateCounter("newcontact", "totalDo");
@@ -242,9 +245,6 @@ function moveToSection2(index: number): void {
       completeBtn.classList.remove("d-none");
     }
   }
-  localStorage.setItem("productList", JSON.stringify(productList));
-
-  displayProduct(productList);
 }
 
 // todo Btn
@@ -254,6 +254,8 @@ function backToSection1(index: number): void {
   let section1 = document.getElementById("newcontact");
 
   if (productCard && section1) {
+    productList[index]!.status = "todo";
+    localStorage.setItem("productList", JSON.stringify(productList));
     section1.appendChild(productCard);
 
     updateCounter("newcontact", "totalDo");
@@ -279,9 +281,6 @@ function backToSection1(index: number): void {
       todoBtn.classList.remove("d-block");
     }
   }
-  localStorage.setItem("productList", JSON.stringify(productList));
-
-  displayProduct(productList);
 }
 
 // complete Btn
@@ -291,6 +290,8 @@ function moveToSection3(index: number): void {
   let section3 = document.getElementById("newcontact3");
 
   if (productCard && section3) {
+    productList[index]!.status = "done";
+    localStorage.setItem("productList", JSON.stringify(productList));
     section3.appendChild(productCard);
     updateCounter("newcontact", "totalDo");
     updateCounter("newcontact2", "totalDo2");
@@ -315,9 +316,6 @@ function moveToSection3(index: number): void {
       completeBtn.style.display = "none";
     }
   }
-  localStorage.setItem("productList", JSON.stringify(productList));
-
-  displayProduct(productList);
 }
 
 (window as any).moveToSection3 = moveToSection3;
