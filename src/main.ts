@@ -1,14 +1,17 @@
 let productName = document.getElementById("productInput") as HTMLInputElement;
 let selectInput = document.getElementById("selectInput") as HTMLInputElement;
 let dateInput = document.getElementById("dateInput") as HTMLInputElement;
+let count = document.querySelector(".count") as HTMLInputElement;
+let progress = document.querySelector(".progress") as HTMLInputElement;
 let textareaInput = document.getElementById(
   "textareaInput",
 ) as HTMLInputElement;
-
+let maxlength = Number(textareaInput.getAttribute("maxlength"));
 //btn
 let addBtn = document.getElementById("addBtn");
 let deleteButton = document.getElementById("deleteButton");
 let updateBtn = document.getElementById("updateBtn");
+//////
 
 //
 let productList: Products[] = [];
