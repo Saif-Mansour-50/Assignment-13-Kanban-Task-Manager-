@@ -98,7 +98,7 @@ function displayProduct(list: Products[]): void {
 
     cartona += `
     
-     <div id="product-card-${i}" class="mb-3 bg-hov shadow-hover p-2 mt-3 rounded-3">
+     <div id="product-card-${list[i]?.timestamp}" class="mb-3 bg-hov shadow-hover p-2 mt-3 rounded-3">
               <div class="d-flex justify-content-between align-items-center ">
                 <div>
                   <span><i  style="font-size: 10px;" class="fa-solid fa-circle me-1 text-black-50"></i></span>
@@ -110,7 +110,8 @@ function displayProduct(list: Products[]): void {
         data-bs-toggle="modal"
         data-bs-target="#staticBackdrop"
             title="Edit"
-            onclick="gitDataToUpdate(${i})"
+            onclick="gitDataToUpdate(${list[i]?.timestamp})"
+            
             class="bg-location bg-nav bg-edit rounded-3 cursor-p  d-flex align-items-center justify-content-center me-2"
           >
             <i class="fa-solid fa-pen fa-xs "></i>
@@ -120,7 +121,7 @@ function displayProduct(list: Products[]): void {
             data-bs-placement="top"
             title="delete"
             id="deleteButton"
-            onclick="deleteProduct(${i})"
+            onclick="deleteProduct(${list[i]?.timestamp})"
             class="bg-location bg-nav bg-trash rounded-3 cursor-p d-flex align-items-center trash justify-content-center"
           >
             <i class="fa-solid fa-trash fa-xs"></i>
@@ -135,19 +136,19 @@ function displayProduct(list: Products[]): void {
                 <span> <i class="fa-regular fa-clock"></i> ${getTimeAgo(list[i]?.timestamp ?? Date.now())}</span>
               </div>
               <div class="d-flex align-items-center py-2">
-                <span onclick="moveToSection2(${i})"
+                <span onclick="moveToSection2(${list[i]?.timestamp})"
                 class="p-1 me-2 bg-st fw-semibold m-0 rounded-3"
                 
               >
                 <i class="fa-solid fa-plus fa-2lg "></i> Start
               </span>
-                <span onclick="backToSection1(${i})" 
+                <span onclick="backToSection1(${list[i]?.timestamp})" 
                 class="p-1 me-2 bg-todoo text-black-50  fw-semibold m-0 rounded-3 d-none "
                 
               >
                 <i class="fa-solid fa-arrow-rotate-left"></i> To Do
               </span>
-                  <span  onclick="moveToSection3(${i})"
+                  <span  onclick="moveToSection3(${list[i]?.timestamp})"
                 class="p-1 bg-co fw-semibold  m-0 rounded-3"
                 
               >
@@ -178,10 +179,11 @@ function deleteProduct(index: number): void {
 }
 
 //edit
+let currentId: number;
+function gitDataToUpdate(id: number): void {
+  currentId = id;
 
-function gitDataToUpdate(index: number): void {
-  currentIndex = index;
-  let product = productList[index];
+  const product = productList.find((p) => p.timestamp === id);
 
   if (product) {
     productName.value = product.name;
@@ -194,7 +196,7 @@ function gitDataToUpdate(index: number): void {
 }
 
 function updateProduct(): void {
-  let product = productList[currentIndex];
+  let product = productList[currentId];
 
   if (product) {
     product.name = productName.value;
@@ -209,6 +211,12 @@ function updateProduct(): void {
   productName.value = "";
   textareaInput.value = "";
   dateInput.value = "";
+  const modalEl = document.getElementById("staticBackdrop");
+  if (modalEl) {
+    // @ts-ignore
+    const modal = bootstrap.Modal.getInstance(modalEl);
+    modal?.hide();
+  }
 }
 
 // start btn

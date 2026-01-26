@@ -27,7 +27,13 @@ p {
   background-color: #f3f4f6;
 }
 .bg-gradien {
-  background-image: linear-gradient(to right, #7d23fd, #5039f7);
+  background-image: linear-gradient(to right, #5438f7, #9811fa);
+}
+.bg-footer {
+  background-image: linear-gradient(to right, #1d293d, #0f182c);
+}
+.bg-footer p {
+  min-height: 3.75rem;
 }
 .bg-add {
   width: 45px;
