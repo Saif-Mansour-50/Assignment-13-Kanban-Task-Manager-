@@ -1,33 +1,31 @@
+//  DOM
 let productName = document.getElementById("productInput") as HTMLInputElement;
-let selectInput = document.getElementById("selectInput") as HTMLInputElement;
+let selectInput = document.getElementById("selectInput") as HTMLSelectElement;
 let dateInput = document.getElementById("dateInput") as HTMLInputElement;
-let count = document.querySelector(".count") as HTMLInputElement;
-let progress = document.querySelector(".progress") as HTMLInputElement;
+// Due Date
+
+let today = new Date();
+let yyyy = today.getFullYear();
+let mm = String(today.getMonth() + 1).padStart(2, "0");
+let dd = String(today.getDate()).padStart(2, "0");
+
+dateInput.min = `${yyyy}-${mm}-${dd}`;
+
 let textareaInput = document.getElementById(
   "textareaInput",
-) as HTMLInputElement;
-let maxlength = Number(textareaInput.getAttribute("maxlength"));
-//btn
+) as HTMLTextAreaElement;
+
+let count = document.querySelector(".count") as HTMLElement;
+let progress = document.querySelector(".progress") as HTMLElement;
+
 let addBtn = document.getElementById("addBtn");
-let deleteButton = document.getElementById("deleteButton");
 let updateBtn = document.getElementById("updateBtn");
-//////
 
-//
-let productList: Products[] = [];
+let maxlength = Number(textareaInput.getAttribute("maxlength"));
 
-let currentIndex: number;
-
-//localStorge
-
-if (localStorage.getItem("productList") != null) {
-  productList = JSON.parse(localStorage.getItem("productList")!) as Products[];
-  displayProduct(productList);
-}
-//
-
-// console.log(productName, selectInput, dateInput, textareaInput);
+// Types
 interface Products {
+  serial: number;
   name: string;
   selectInput: string;
   date: string;
@@ -36,10 +34,38 @@ interface Products {
   status: "todo" | "doing" | "done";
 }
 
-function addProduct(e: Event) {
+function getNextSerial(): number {
+  let used = productList.map((p) => p.serial).sort((a, b) => a - b);
+
+  let serial = 1;
+  for (let num of used) {
+    if (num === serial) serial++;
+    else break;
+  }
+  return serial;
+}
+
+//
+let productList: Products[] = [];
+let currentId: number | null = null;
+
+//
+if (localStorage.getItem("productList")) {
+  productList = JSON.parse(localStorage.getItem("productList")!) as Products[];
+  renderByStatus();
+}
+
+// ================== Add ==================
+function addProduct(e: Event): void {
   e.preventDefault();
 
-  let productData: Products = {
+  if (productName.value.trim().length < 3) {
+    productName.focus();
+    return;
+  }
+
+  let product: Products = {
+    serial: getNextSerial(),
     name: productName.value,
     selectInput: selectInput.value,
     date: dateInput.value,
@@ -48,305 +74,205 @@ function addProduct(e: Event) {
     status: "todo",
   };
 
-  productList.push(productData);
-  updateCounter("newcontact", "totalDo");
-  updateCounter("newcontact2", "totalDo2");
-  updateCounter("newcontact3", "totalDo3");
-  localStorage.setItem("productList", JSON.stringify(productList));
-
-  displayProduct(productList);
-  productName.value = "";
-  textareaInput.value = "";
-  dateInput.value = "";
-}
-// tasks count todo
-function updateCounter(containerId: string, displayId: string): void {
-  let container = document.getElementById(containerId);
-  let totalDisplay = document.getElementById(displayId);
-
-  if (container && totalDisplay) {
-    let count = container.querySelectorAll(":scope > div").length;
-    totalDisplay.textContent = `${count} tasks`;
-  }
+  productList.push(product);
+  persist();
+  renderByStatus();
+  resetForm();
 }
 
-// tasks count In Progress
+addBtn?.addEventListener("click", addProduct);
 
-// tasks count Completed
-
-function getTimeAgo(time: number): string {
-  let seconds = Math.floor((Date.now() - time) / 1000);
-
-  if (seconds < 60) return "Just now";
-  let minutes = Math.floor(seconds / 60);
-  if (minutes < 60) return `${minutes} min ago`;
-  let hours = Math.floor(minutes / 60);
-  if (hours < 24) return `${hours} hours ago`;
-
-  return "a day ago";
+//
+function renderByStatus(): void {
+  renderColumn(
+    "newcontact",
+    productList.filter((p) => p.status === "todo"),
+  );
+  renderColumn(
+    "newcontact2",
+    productList.filter((p) => p.status === "doing"),
+  );
+  renderColumn(
+    "newcontact3",
+    productList.filter((p) => p.status === "done"),
+  );
+  updateAllCounters();
 }
 
-setInterval(() => {
-  displayProduct(productList);
-}, 60000);
+function formatDate(dateStr: string): string {
+  if (!dateStr) return "";
 
-function displayProduct(list: Products[]): void {
-  let cartona: string = ``;
+  let date = new Date(dateStr);
+  return date.toLocaleDateString("en-GB", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  });
+}
 
-  for (let i = 0; i < list.length; i++) {
-    let serialNumber: string = (i + 1).toString().padStart(3, "0");
+function renderColumn(containerId: string, list: Products[]): void {
+  let container = document.getElementById(containerId) as HTMLElement;
+  container.innerHTML = "";
 
-    cartona += `
-    
-     <div id="product-card-${list[i]?.timestamp}" class="mb-3 bg-hov shadow-hover p-2 mt-3 rounded-3">
-              <div class="d-flex justify-content-between align-items-center ">
-                <div>
-                  <span><i  style="font-size: 10px;" class="fa-solid fa-circle me-1 text-black-50"></i></span>
-                  <span class="text-black-50">#${serialNumber}</span>
-                </div>
-                <div class="d-flex gap-2">
-                  <span
-              aria-current="page"
-        data-bs-toggle="modal"
-        data-bs-target="#staticBackdrop"
-            title="Edit"
-            onclick="gitDataToUpdate(${list[i]?.timestamp})"
-            
-            class="bg-location bg-nav bg-edit rounded-3 cursor-p  d-flex align-items-center justify-content-center me-2"
-          >
-            <i class="fa-solid fa-pen fa-xs "></i>
-          </span>
-          <span
-            data-bs-toggle="tooltip"
-            data-bs-placement="top"
-            title="delete"
-            id="deleteButton"
-            onclick="deleteProduct(${list[i]?.timestamp})"
-            class="bg-location bg-nav bg-trash rounded-3 cursor-p d-flex align-items-center trash justify-content-center"
-          >
-            <i class="fa-solid fa-trash fa-xs"></i>
-          </span>
-                </div>
-              </div>
-              <h3 class="fs-5 py-2">${list[i]?.name}</h3>
-              <p class="text-black-50 pb-2">${list[i]?.textareaInput}</p>
-              <span class="badge bg-blue-50 text-primary fw-medium p-2"> <i  style="font-size: 10px;" class="fa-solid fa-circle me-1 text-primary"></i>${list[i]?.selectInput}</span>
-              <div class="d-flex align-items-center text-black-50 py-2 border-bottom gap-2" >
-                <span> <i class="fa-regular fa-calendar text "></i> ${list[i]?.date}</span>
-                <span> <i class="fa-regular fa-clock"></i> ${getTimeAgo(list[i]?.timestamp ?? Date.now())}</span>
-              </div>
-              <div class="d-flex align-items-center py-2">
-                <span onclick="moveToSection2(${list[i]?.timestamp})"
-                class="p-1 me-2 bg-st fw-semibold m-0 rounded-3"
-                
-              >
-                <i class="fa-solid fa-plus fa-2lg "></i> Start
-              </span>
-                <span onclick="backToSection1(${list[i]?.timestamp})" 
-                class="p-1 me-2 bg-todoo text-black-50  fw-semibold m-0 rounded-3 d-none "
-                
-              >
-                <i class="fa-solid fa-arrow-rotate-left"></i> To Do
-              </span>
-                  <span  onclick="moveToSection3(${list[i]?.timestamp})"
-                class="p-1 bg-co fw-semibold  m-0 rounded-3"
-                
-              >
-                <i class="fa-solid fa-plus fa-2lg "></i> Complete
-              </span>
-              </div>
-              
+  list.forEach((p, i) => {
+    let serial = (i + 1).toString().padStart(3, "0");
 
-            </div>
-    
+    container.innerHTML += `
+      <div id="product-card-${p.timestamp}" class="mb-3 bg-hov shadow-hover p-2 mt-3 rounded-3">
+        <div class="d-flex justify-content-between align-items-center">
+          <span class="text-black-50">#${serial}</span>
+          <div class="d-flex gap-2">
+            <span onclick="gitDataToUpdate(${p.timestamp})" data-bs-toggle="modal" data-bs-target="#staticBackdrop"
+              class="bg-edit rounded-3 cursor-p d-flex align-items-center justify-content-center">
+              <i class="fa-solid fa-pen fa-xs"></i>
+            </span>
+            <span onclick="deleteProduct(${p.timestamp})"
+              class="bg-trash rounded-3 cursor-p d-flex align-items-center justify-content-center">
+              <i class="fa-solid fa-trash fa-xs"></i>
+            </span>
+          </div>
+        </div>
+
+<h3 
+  class="fs-5 py-2 ${p.status === "done" ? "text-decoration-line-through text-muted" : ""}">
+  ${p.name}
+</h3>        <p class="text-black-50">${p.textareaInput}</p>
+        <span class="badge bg-primary">${p.selectInput}</span>
+
+       <div class="text-black-50 py-2 border-bottom d-flex gap-3 align-items-center">
+  <span>
+    <i class="fa-regular fa-clock"></i>
+    ${getTimeAgo(p.timestamp)}
+  </span>
+
+  <span>
+    <i class="fa-regular fa-calendar"></i>
+    ${formatDate(p.date)}
+  </span>
+</div>
+
+
+        <div class="d-flex gap-2 pt-2">
+          ${p.status !== "doing" ? `<span class="p-1 me-2 bg-st fw-semibold m-0 rounded-3" onclick="moveToSection2(${p.timestamp})">Start</span>` : ""}
+          ${p.status !== "todo" ? `<span class="p-1 me-2 bg-todoo text-black-50 fw-semibold m-0 rounded-3  " onclick="backToSection1(${p.timestamp})">To Do</span>` : ""}
+          ${p.status !== "done" ? `<span class="p-1 bg-co fw-semibold m-0 rounded-3" onclick="moveToSection3(${p.timestamp})">Complete</span>` : ""}
+        </div>
+      </div>
     `;
-  }
-  (document.getElementById("newcontact") as HTMLElement).innerHTML = cartona;
+  });
 }
 
-addBtn?.addEventListener("click", (e) => addProduct(e));
-
-// delet
-function deleteProduct(index: number): void {
-  productList.splice(index, 1);
-  localStorage.setItem("productList", JSON.stringify(productList));
-
-  displayProduct(productList);
-
-  updateCounter("newcontact", "totalDo");
-  updateCounter("newcontact2", "totalDo2");
-  updateCounter("newcontact3", "totalDo3");
+//  Delete
+function deleteProduct(timestamp: number): void {
+  productList = productList.filter((p) => p.timestamp !== timestamp);
+  persist();
+  renderByStatus();
 }
 
-//edit
-let currentId: number;
-function gitDataToUpdate(id: number): void {
-  currentId = id;
+// Edit
+function gitDataToUpdate(timestamp: number): void {
+  currentId = timestamp;
+  let product = productList.find((p) => p.timestamp === timestamp);
+  if (!product) return;
 
-  const product = productList.find((p) => p.timestamp === id);
+  productName.value = product.name;
+  selectInput.value = product.selectInput;
+  textareaInput.value = product.textareaInput;
+  dateInput.value = product.date;
 
-  if (product) {
-    productName.value = product.name;
-    selectInput.value = product.selectInput;
-    textareaInput.value = product.textareaInput;
-    dateInput.value = product.date;
-  }
   addBtn?.classList.add("d-none");
   updateBtn?.classList.remove("d-none");
 }
 
 function updateProduct(): void {
-  let product = productList[currentId];
+  if (currentId === null) return;
 
-  if (product) {
-    product.name = productName.value;
-    product.selectInput = selectInput.value;
-    product.textareaInput = textareaInput.value;
-    product.date = dateInput.value;
-  }
-  displayProduct(productList);
+  let product = productList.find((p) => p.timestamp === currentId);
+  if (!product) return;
+
+  product.name = productName.value;
+  product.selectInput = selectInput.value;
+  product.textareaInput = textareaInput.value;
+  product.date = dateInput.value;
+
+  persist();
+  renderByStatus();
+  resetForm();
+
+  let modalEl = document.getElementById("staticBackdrop");
+  // @ts-ignore
+  bootstrap.Modal.getInstance(modalEl)?.hide();
+}
+
+//
+function moveToSection2(id: number): void {
+  updateStatus(id, "doing");
+}
+function backToSection1(id: number): void {
+  updateStatus(id, "todo");
+}
+function moveToSection3(id: number): void {
+  updateStatus(id, "done");
+}
+
+function updateStatus(id: number, status: Products["status"]): void {
+  let product = productList.find((p) => p.timestamp === id);
+  if (!product) return;
+
+  product.status = status;
+  persist();
+  renderByStatus();
+}
+
+//
+function persist(): void {
   localStorage.setItem("productList", JSON.stringify(productList));
-  addBtn?.classList.remove("d-none");
-  updateBtn?.classList.add("d-none");
+}
+
+function resetForm(): void {
   productName.value = "";
   textareaInput.value = "";
   dateInput.value = "";
-  const modalEl = document.getElementById("staticBackdrop");
-  if (modalEl) {
-    // @ts-ignore
-    const modal = bootstrap.Modal.getInstance(modalEl);
-    modal?.hide();
+  addBtn?.classList.remove("d-none");
+  updateBtn?.classList.add("d-none");
+  currentId = null;
+}
+
+function updateCounter(containerId: string, displayId: string): void {
+  let container = document.getElementById(containerId);
+  let display = document.getElementById(displayId);
+  if (container && display) {
+    display.textContent = `${container.children.length} tasks`;
   }
 }
 
-// start btn
-
-function moveToSection2(index: number): void {
-  let productCard = document.getElementById(`product-card-${index}`);
-  let section2Container = document.getElementById("newcontact2");
-
-  if (productCard && section2Container) {
-    productList[index]!.status = "doing";
-    localStorage.setItem("productList", JSON.stringify(productList));
-
-    section2Container.appendChild(productCard);
-
-    updateCounter("newcontact", "totalDo");
-    updateCounter("newcontact2", "totalDo2");
-    updateCounter("newcontact3", "totalDo3");
-
-    let startBtn = productCard.querySelector(".bg-st") as HTMLElement;
-    let todoBtn = productCard.querySelector(".bg-todoo") as HTMLElement;
-    let completeBtn = productCard.querySelector(".bg-co") as HTMLElement;
-
-    if (startBtn) {
-      startBtn.style.display = "none";
-    }
-
-    if (todoBtn) {
-      todoBtn.classList.remove("d-none");
-      todoBtn.classList.add("d-block");
-    }
-
-    if (completeBtn) {
-      completeBtn.style.display = "block";
-      completeBtn.classList.remove("d-none");
-    }
-  }
+function updateAllCounters(): void {
+  updateCounter("newcontact", "totalDo");
+  updateCounter("newcontact2", "totalDo2");
+  updateCounter("newcontact3", "totalDo3");
 }
 
-// todo Btn
-
-function backToSection1(index: number): void {
-  let productCard = document.getElementById(`product-card-${index}`);
-  let section1 = document.getElementById("newcontact");
-
-  if (productCard && section1) {
-    productList[index]!.status = "todo";
-    localStorage.setItem("productList", JSON.stringify(productList));
-    section1.appendChild(productCard);
-
-    updateCounter("newcontact", "totalDo");
-    updateCounter("newcontact2", "totalDo2");
-    updateCounter("newcontact3", "totalDo3");
-
-    let startBtn = productCard.querySelector(".bg-st") as HTMLElement;
-    let completeBtn = productCard.querySelector(".bg-co") as HTMLElement;
-    let todoBtn = productCard.querySelector(".bg-todoo") as HTMLElement;
-
-    if (startBtn) {
-      startBtn.style.display = "block";
-      startBtn.classList.remove("d-none");
-    }
-
-    if (completeBtn) {
-      completeBtn.style.display = "block";
-      completeBtn.classList.remove("d-none");
-    }
-
-    if (todoBtn) {
-      todoBtn.classList.add("d-none");
-      todoBtn.classList.remove("d-block");
-    }
-  }
+function getTimeAgo(time: number): string {
+  let seconds = Math.floor((Date.now() - time) / 1000);
+  if (seconds < 60) return "Just now";
+  let minutes = Math.floor(seconds / 60);
+  if (minutes < 60) return `${minutes} min ago`;
+  let hours = Math.floor(minutes / 60);
+  return `${hours} hours ago`;
 }
 
-// complete Btn
-
-function moveToSection3(index: number): void {
-  let productCard = document.getElementById(`product-card-${index}`);
-  let section3 = document.getElementById("newcontact3");
-
-  if (productCard && section3) {
-    productList[index]!.status = "done";
-    localStorage.setItem("productList", JSON.stringify(productList));
-    section3.appendChild(productCard);
-    updateCounter("newcontact", "totalDo");
-    updateCounter("newcontact2", "totalDo2");
-    updateCounter("newcontact3", "totalDo3");
-
-    let startBtn = productCard.querySelector(".bg-st") as HTMLElement;
-    let todoBtn = productCard.querySelector(".bg-todoo") as HTMLElement;
-    let completeBtn = productCard.querySelector(".bg-co") as HTMLElement;
-
-    if (startBtn) {
-      startBtn.style.display = "block";
-
-      startBtn.classList.remove("d-none");
-    }
-
-    if (todoBtn) {
-      todoBtn.classList.remove("d-none");
-      todoBtn.classList.add("d-block");
-    }
-
-    if (completeBtn) {
-      completeBtn.style.display = "none";
-    }
-  }
-}
-
-(window as any).moveToSection3 = moveToSection3;
+//
+(window as any).gitDataToUpdate = gitDataToUpdate;
+(window as any).deleteProduct = deleteProduct;
 (window as any).moveToSection2 = moveToSection2;
+(window as any).moveToSection3 = moveToSection3;
 (window as any).backToSection1 = backToSection1;
+(window as any).updateProduct = updateProduct;
 
-// count down
-if (maxlength) {
-  count.textContent = maxlength.toString();
-}
-textareaInput.oninput = function () {
-  let currentLength = textareaInput.value.length;
-  let max = Number(maxlength);
-
-  count.textContent = (max - currentLength).toString();
-  progress.style.width = `${(currentLength * 100) / max}%`;
+//
+if (maxlength) count.textContent = maxlength.toString();
+textareaInput.oninput = () => {
+  let len = textareaInput.value.length;
+  count.textContent = String(maxlength - len);
+  progress.style.width = `${(len / maxlength) * 100}%`;
 };
-
-//count task
-// let totalDisplay = document.getElementById("totalDo") as HTMLInputElement;
-
-// let container = document.getElementById("newcontact") as HTMLInputElement;
-
-// let numberOfTasks = container.querySelectorAll(":scope > div").length;
-
-// totalDisplay.textContent = `${numberOfTasks} tasks`;

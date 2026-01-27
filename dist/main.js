@@ -1,26 +1,47 @@
+//  DOM
 let productName = document.getElementById("productInput");
 let selectInput = document.getElementById("selectInput");
 let dateInput = document.getElementById("dateInput");
+// Due Date
+let today = new Date();
+let yyyy = today.getFullYear();
+let mm = String(today.getMonth() + 1).padStart(2, "0");
+let dd = String(today.getDate()).padStart(2, "0");
+dateInput.min = `${yyyy}-${mm}-${dd}`;
+let textareaInput = document.getElementById("textareaInput");
 let count = document.querySelector(".count");
 let progress = document.querySelector(".progress");
-let textareaInput = document.getElementById("textareaInput");
-let maxlength = Number(textareaInput.getAttribute("maxlength"));
-//btn
 let addBtn = document.getElementById("addBtn");
-let deleteButton = document.getElementById("deleteButton");
 let updateBtn = document.getElementById("updateBtn");
-//////
+let maxlength = Number(textareaInput.getAttribute("maxlength"));
+function getNextSerial() {
+    let used = productList.map((p) => p.serial).sort((a, b) => a - b);
+    let serial = 1;
+    for (let num of used) {
+        if (num === serial)
+            serial++;
+        else
+            break;
+    }
+    return serial;
+}
 //
 let productList = [];
-let currentIndex;
-//localStorge
-if (localStorage.getItem("productList") != null) {
+let currentId = null;
+//
+if (localStorage.getItem("productList")) {
     productList = JSON.parse(localStorage.getItem("productList"));
-    displayProduct(productList);
+    renderByStatus();
 }
+// ================== Add ==================
 function addProduct(e) {
     e.preventDefault();
-    let productData = {
+    if (productName.value.trim().length < 3) {
+        productName.focus();
+        return;
+    }
+    let product = {
+        serial: getNextSerial(),
         name: productName.value,
         selectInput: selectInput.value,
         date: dateInput.value,
@@ -28,27 +49,156 @@ function addProduct(e) {
         timestamp: Date.now(),
         status: "todo",
     };
-    productList.push(productData);
-    updateCounter("newcontact", "totalDo");
-    updateCounter("newcontact2", "totalDo2");
-    updateCounter("newcontact3", "totalDo3");
+    productList.push(product);
+    persist();
+    renderByStatus();
+    resetForm();
+}
+addBtn?.addEventListener("click", addProduct);
+//
+function renderByStatus() {
+    renderColumn("newcontact", productList.filter((p) => p.status === "todo"));
+    renderColumn("newcontact2", productList.filter((p) => p.status === "doing"));
+    renderColumn("newcontact3", productList.filter((p) => p.status === "done"));
+    updateAllCounters();
+}
+function formatDate(dateStr) {
+    if (!dateStr)
+        return "";
+    let date = new Date(dateStr);
+    return date.toLocaleDateString("en-GB", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+    });
+}
+function renderColumn(containerId, list) {
+    let container = document.getElementById(containerId);
+    container.innerHTML = "";
+    list.forEach((p, i) => {
+        let serial = (i + 1).toString().padStart(3, "0");
+        container.innerHTML += `
+      <div id="product-card-${p.timestamp}" class="mb-3 bg-hov shadow-hover p-2 mt-3 rounded-3">
+        <div class="d-flex justify-content-between align-items-center">
+          <span class="text-black-50">#${serial}</span>
+          <div class="d-flex gap-2">
+            <span onclick="gitDataToUpdate(${p.timestamp})" data-bs-toggle="modal" data-bs-target="#staticBackdrop"
+              class="bg-edit rounded-3 cursor-p d-flex align-items-center justify-content-center">
+              <i class="fa-solid fa-pen fa-xs"></i>
+            </span>
+            <span onclick="deleteProduct(${p.timestamp})"
+              class="bg-trash rounded-3 cursor-p d-flex align-items-center justify-content-center">
+              <i class="fa-solid fa-trash fa-xs"></i>
+            </span>
+          </div>
+        </div>
+
+<h3 
+  class="fs-5 py-2 ${p.status === "done" ? "text-decoration-line-through text-muted" : ""}">
+  ${p.name}
+</h3>        <p class="text-black-50">${p.textareaInput}</p>
+        <span class="badge bg-primary">${p.selectInput}</span>
+
+       <div class="text-black-50 py-2 border-bottom d-flex gap-3 align-items-center">
+  <span>
+    <i class="fa-regular fa-clock"></i>
+    ${getTimeAgo(p.timestamp)}
+  </span>
+
+  <span>
+    <i class="fa-regular fa-calendar"></i>
+    ${formatDate(p.date)}
+  </span>
+</div>
+
+
+        <div class="d-flex gap-2 pt-2">
+          ${p.status !== "doing" ? `<span class="p-1 me-2 bg-st fw-semibold m-0 rounded-3" onclick="moveToSection2(${p.timestamp})">Start</span>` : ""}
+          ${p.status !== "todo" ? `<span class="p-1 me-2 bg-todoo text-black-50 fw-semibold m-0 rounded-3  " onclick="backToSection1(${p.timestamp})">To Do</span>` : ""}
+          ${p.status !== "done" ? `<span class="p-1 bg-co fw-semibold m-0 rounded-3" onclick="moveToSection3(${p.timestamp})">Complete</span>` : ""}
+        </div>
+      </div>
+    `;
+    });
+}
+//  Delete
+function deleteProduct(timestamp) {
+    productList = productList.filter((p) => p.timestamp !== timestamp);
+    persist();
+    renderByStatus();
+}
+// Edit
+function gitDataToUpdate(timestamp) {
+    currentId = timestamp;
+    let product = productList.find((p) => p.timestamp === timestamp);
+    if (!product)
+        return;
+    productName.value = product.name;
+    selectInput.value = product.selectInput;
+    textareaInput.value = product.textareaInput;
+    dateInput.value = product.date;
+    addBtn?.classList.add("d-none");
+    updateBtn?.classList.remove("d-none");
+}
+function updateProduct() {
+    if (currentId === null)
+        return;
+    let product = productList.find((p) => p.timestamp === currentId);
+    if (!product)
+        return;
+    product.name = productName.value;
+    product.selectInput = selectInput.value;
+    product.textareaInput = textareaInput.value;
+    product.date = dateInput.value;
+    persist();
+    renderByStatus();
+    resetForm();
+    let modalEl = document.getElementById("staticBackdrop");
+    // @ts-ignore
+    bootstrap.Modal.getInstance(modalEl)?.hide();
+}
+//
+function moveToSection2(id) {
+    updateStatus(id, "doing");
+}
+function backToSection1(id) {
+    updateStatus(id, "todo");
+}
+function moveToSection3(id) {
+    updateStatus(id, "done");
+}
+function updateStatus(id, status) {
+    let product = productList.find((p) => p.timestamp === id);
+    if (!product)
+        return;
+    product.status = status;
+    persist();
+    renderByStatus();
+}
+//
+function persist() {
     localStorage.setItem("productList", JSON.stringify(productList));
-    displayProduct(productList);
+}
+function resetForm() {
     productName.value = "";
     textareaInput.value = "";
     dateInput.value = "";
+    addBtn?.classList.remove("d-none");
+    updateBtn?.classList.add("d-none");
+    currentId = null;
 }
-// tasks count todo
 function updateCounter(containerId, displayId) {
     let container = document.getElementById(containerId);
-    let totalDisplay = document.getElementById(displayId);
-    if (container && totalDisplay) {
-        let count = container.querySelectorAll(":scope > div").length;
-        totalDisplay.textContent = `${count} tasks`;
+    let display = document.getElementById(displayId);
+    if (container && display) {
+        display.textContent = `${container.children.length} tasks`;
     }
 }
-// tasks count In Progress
-// tasks count Completed
+function updateAllCounters() {
+    updateCounter("newcontact", "totalDo");
+    updateCounter("newcontact2", "totalDo2");
+    updateCounter("newcontact3", "totalDo3");
+}
 function getTimeAgo(time) {
     let seconds = Math.floor((Date.now() - time) / 1000);
     if (seconds < 60)
@@ -57,220 +207,21 @@ function getTimeAgo(time) {
     if (minutes < 60)
         return `${minutes} min ago`;
     let hours = Math.floor(minutes / 60);
-    if (hours < 24)
-        return `${hours} hours ago`;
-    return "a day ago";
+    return `${hours} hours ago`;
 }
-setInterval(() => {
-    displayProduct(productList);
-}, 60000);
-function displayProduct(list) {
-    let cartona = ``;
-    for (let i = 0; i < list.length; i++) {
-        let serialNumber = (i + 1).toString().padStart(3, "0");
-        cartona += `
-    
-     <div id="product-card-${i}" class="mb-3 bg-hov shadow-hover p-2 mt-3 rounded-3">
-              <div class="d-flex justify-content-between align-items-center ">
-                <div>
-                  <span><i  style="font-size: 10px;" class="fa-solid fa-circle me-1 text-black-50"></i></span>
-                  <span class="text-black-50">#${serialNumber}</span>
-                </div>
-                <div class="d-flex gap-2">
-                  <span
-              aria-current="page"
-        data-bs-toggle="modal"
-        data-bs-target="#staticBackdrop"
-            title="Edit"
-            onclick="gitDataToUpdate(${i})"
-            class="bg-location bg-nav bg-edit rounded-3 cursor-p  d-flex align-items-center justify-content-center me-2"
-          >
-            <i class="fa-solid fa-pen fa-xs "></i>
-          </span>
-          <span
-            data-bs-toggle="tooltip"
-            data-bs-placement="top"
-            title="delete"
-            id="deleteButton"
-            onclick="deleteProduct(${i})"
-            class="bg-location bg-nav bg-trash rounded-3 cursor-p d-flex align-items-center trash justify-content-center"
-          >
-            <i class="fa-solid fa-trash fa-xs"></i>
-          </span>
-                </div>
-              </div>
-              <h3 class="fs-5 py-2">${list[i]?.name}</h3>
-              <p class="text-black-50 pb-2">${list[i]?.textareaInput}</p>
-              <span class="badge bg-blue-50 text-primary fw-medium p-2"> <i  style="font-size: 10px;" class="fa-solid fa-circle me-1 text-primary"></i>${list[i]?.selectInput}</span>
-              <div class="d-flex align-items-center text-black-50 py-2 border-bottom gap-2" >
-                <span> <i class="fa-regular fa-calendar text "></i> ${list[i]?.date}</span>
-                <span> <i class="fa-regular fa-clock"></i> ${getTimeAgo(list[i]?.timestamp ?? Date.now())}</span>
-              </div>
-              <div class="d-flex align-items-center py-2">
-                <span onclick="moveToSection2(${i})"
-                class="p-1 me-2 bg-st fw-semibold m-0 rounded-3"
-                
-              >
-                <i class="fa-solid fa-plus fa-2lg "></i> Start
-              </span>
-                <span onclick="backToSection1(${i})" 
-                class="p-1 me-2 bg-todoo text-black-50  fw-semibold m-0 rounded-3 d-none "
-                
-              >
-                <i class="fa-solid fa-arrow-rotate-left"></i> To Do
-              </span>
-                  <span  onclick="moveToSection3(${i})"
-                class="p-1 bg-co fw-semibold  m-0 rounded-3"
-                
-              >
-                <i class="fa-solid fa-plus fa-2lg "></i> Complete
-              </span>
-              </div>
-              
-
-            </div>
-    
-    `;
-    }
-    document.getElementById("newcontact").innerHTML = cartona;
-}
-addBtn?.addEventListener("click", (e) => addProduct(e));
-// delet
-function deleteProduct(index) {
-    productList.splice(index, 1);
-    localStorage.setItem("productList", JSON.stringify(productList));
-    displayProduct(productList);
-    updateCounter("newcontact", "totalDo");
-    updateCounter("newcontact2", "totalDo2");
-    updateCounter("newcontact3", "totalDo3");
-}
-//edit
-function gitDataToUpdate(index) {
-    currentIndex = index;
-    let product = productList[index];
-    if (product) {
-        productName.value = product.name;
-        selectInput.value = product.selectInput;
-        textareaInput.value = product.textareaInput;
-        dateInput.value = product.date;
-    }
-    addBtn?.classList.add("d-none");
-    updateBtn?.classList.remove("d-none");
-}
-function updateProduct() {
-    let product = productList[currentIndex];
-    if (product) {
-        product.name = productName.value;
-        product.selectInput = selectInput.value;
-        product.textareaInput = textareaInput.value;
-        product.date = dateInput.value;
-    }
-    displayProduct(productList);
-    localStorage.setItem("productList", JSON.stringify(productList));
-    addBtn?.classList.remove("d-none");
-    updateBtn?.classList.add("d-none");
-    productName.value = "";
-    textareaInput.value = "";
-    dateInput.value = "";
-}
-// start btn
-function moveToSection2(index) {
-    let productCard = document.getElementById(`product-card-${index}`);
-    let section2Container = document.getElementById("newcontact2");
-    if (productCard && section2Container) {
-        productList[index].status = "doing";
-        localStorage.setItem("productList", JSON.stringify(productList));
-        section2Container.appendChild(productCard);
-        updateCounter("newcontact", "totalDo");
-        updateCounter("newcontact2", "totalDo2");
-        updateCounter("newcontact3", "totalDo3");
-        let startBtn = productCard.querySelector(".bg-st");
-        let todoBtn = productCard.querySelector(".bg-todoo");
-        let completeBtn = productCard.querySelector(".bg-co");
-        if (startBtn) {
-            startBtn.style.display = "none";
-        }
-        if (todoBtn) {
-            todoBtn.classList.remove("d-none");
-            todoBtn.classList.add("d-block");
-        }
-        if (completeBtn) {
-            completeBtn.style.display = "block";
-            completeBtn.classList.remove("d-none");
-        }
-    }
-}
-// todo Btn
-function backToSection1(index) {
-    let productCard = document.getElementById(`product-card-${index}`);
-    let section1 = document.getElementById("newcontact");
-    if (productCard && section1) {
-        productList[index].status = "todo";
-        localStorage.setItem("productList", JSON.stringify(productList));
-        section1.appendChild(productCard);
-        updateCounter("newcontact", "totalDo");
-        updateCounter("newcontact2", "totalDo2");
-        updateCounter("newcontact3", "totalDo3");
-        let startBtn = productCard.querySelector(".bg-st");
-        let completeBtn = productCard.querySelector(".bg-co");
-        let todoBtn = productCard.querySelector(".bg-todoo");
-        if (startBtn) {
-            startBtn.style.display = "block";
-            startBtn.classList.remove("d-none");
-        }
-        if (completeBtn) {
-            completeBtn.style.display = "block";
-            completeBtn.classList.remove("d-none");
-        }
-        if (todoBtn) {
-            todoBtn.classList.add("d-none");
-            todoBtn.classList.remove("d-block");
-        }
-    }
-}
-// complete Btn
-function moveToSection3(index) {
-    let productCard = document.getElementById(`product-card-${index}`);
-    let section3 = document.getElementById("newcontact3");
-    if (productCard && section3) {
-        productList[index].status = "done";
-        localStorage.setItem("productList", JSON.stringify(productList));
-        section3.appendChild(productCard);
-        updateCounter("newcontact", "totalDo");
-        updateCounter("newcontact2", "totalDo2");
-        updateCounter("newcontact3", "totalDo3");
-        let startBtn = productCard.querySelector(".bg-st");
-        let todoBtn = productCard.querySelector(".bg-todoo");
-        let completeBtn = productCard.querySelector(".bg-co");
-        if (startBtn) {
-            startBtn.style.display = "block";
-            startBtn.classList.remove("d-none");
-        }
-        if (todoBtn) {
-            todoBtn.classList.remove("d-none");
-            todoBtn.classList.add("d-block");
-        }
-        if (completeBtn) {
-            completeBtn.style.display = "none";
-        }
-    }
-}
-window.moveToSection3 = moveToSection3;
+//
+window.gitDataToUpdate = gitDataToUpdate;
+window.deleteProduct = deleteProduct;
 window.moveToSection2 = moveToSection2;
+window.moveToSection3 = moveToSection3;
 window.backToSection1 = backToSection1;
-// count down
-if (maxlength) {
+window.updateProduct = updateProduct;
+//
+if (maxlength)
     count.textContent = maxlength.toString();
-}
-textareaInput.oninput = function () {
-    let currentLength = textareaInput.value.length;
-    let max = Number(maxlength);
-    count.textContent = (max - currentLength).toString();
-    progress.style.width = `${(currentLength * 100) / max}%`;
+textareaInput.oninput = () => {
+    let len = textareaInput.value.length;
+    count.textContent = String(maxlength - len);
+    progress.style.width = `${(len / maxlength) * 100}%`;
 };
-//count task
-// let totalDisplay = document.getElementById("totalDo") as HTMLInputElement;
-// let container = document.getElementById("newcontact") as HTMLInputElement;
-// let numberOfTasks = container.querySelectorAll(":scope > div").length;
-// totalDisplay.textContent = `${numberOfTasks} tasks`;
 //# sourceMappingURL=main.js.map
